@@ -1,52 +1,185 @@
-# Prerequisites
-*.d
+/******************************************************************************
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+Welcome to GDB Online.
+  GDB online is an online compiler and debugger tool for C, C++, Python, PHP, Ruby, 
+  C#, OCaml, VB, Perl, Swift, Prolog, Javascript, Pascal, COBOL, HTML, CSS, JS
+  Code, Compile, Run and Debug online from anywhere in world.
 
-# Linker output
-*.ilk
-*.map
-*.exp
+*******************************************************************************/
+#include <stdio.h>
+#include<malloc.h>
+int max_deg=-1000;
+int min_deg=1000;
+struct node{
+    int coeff;
+    int deg;
+    struct node* next;
+}*head=NULL,*tail=NULL;
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+struct node* create_node(int coef,int deg){
+    //printf("0");
+    struct node* newnode =(struct node*)malloc(sizeof(struct node));
+    newnode->coeff=coef;
+    newnode->deg=deg;
+    newnode->next=NULL;
+    return newnode;
+}
+struct node* add(struct node*head,int coeff,int deg){
+   //printf("$");
+    struct node *temp,*newnode=create_node(coeff,deg);
+    if(head==NULL){
+        head=tail=newnode;
+    }
+    else{
+        temp=head;
+        while(temp->next!=NULL){
+            temp=temp->next;
+        }
+        temp->next=newnode;
+    }
+    return head;
+}
+struct node* add_poly(struct node* h3,struct node* h1,struct node* h2)
+{
+    while(h1!=NULL&&h2!=NULL){
+        if(h1->deg==h2->deg){
+            h3=add(h3,h1->coeff+h2->coeff,h1->deg);
+            h1=h1->next;
+            h2=h2->next;
+        }
+        else if(h1->deg>h2->deg){
+            h3=add(h3,h1->coeff,h1->deg);
+            h1=h1->next;
+        }
+        else if(h1->deg<h2->deg){
+            h3=add(h3,h2->coeff,h2->deg);
+            h2=h2->next;
+        }
+    }
+    return h3;
+}
+struct node* sub_poly(struct node* h3,struct node* h1,struct node* h2)
+{
+    while(h1!=NULL&&h2!=NULL){
+        if(h1->deg==h2->deg){
+            h3=add(h3,h1->coeff-h2->coeff,h1->deg);
+            h1=h1->next;
+            h2=h2->next;
+        }
+        else if(h1->deg>h2->deg){
+            h3=add(h3,h1->coeff,h1->deg);
+            h1=h1->next;
+        }
+        else if(h1->deg<h2->deg){
+            h3=add(h3,h2->coeff,h2->deg);
+            h2=h2->next;
+        }
+    }
+    return h3;
+}
+struct node* self_simp(struct node* h){
+    struct node* newh=NULL;
+    int sum=0;
+    for(int i=max_deg;i>=min_deg;i--){
+        struct node* temp=h;
+        sum=0;
+        while(temp!=NULL){
+            if(temp->deg==i){
+                sum+=temp->coeff;
+            }
+            temp=temp->next;
+        }
+       // printf("%d",sum);
+        if(sum!=0){
+            newh=add(newh,sum,i);
+        }
+    }
+    h=newh;
+    return h;
+}
+struct node* poly_mul(struct node* h3,struct node* h1,struct node* h2){
+    while(h1!=NULL){
+        struct node* temp=h2;
+        while(temp!=NULL){
+            h3=add(h3,h1->coeff*temp->coeff,h1->deg+temp->deg);
+            if(max_deg<(h1->deg*temp->deg)){
+                max_deg=h1->deg*temp->deg;
+            }
+            if(min_deg>(h1->deg*temp->deg)){
+                min_deg=h1->deg*temp->deg;
+            }
+            temp=temp->next;
+        }
+        h1=h1->next;
+    }
+    // printf("%d %d",min_deg,max_deg);
+    // printf("ullavanthi");
+    // display(h3);
+    h3=self_simp(h3);
+    return h3;
+}
+void display(struct node* head){
+    struct node* temp=head;
+    while(temp!=NULL){
+        printf("%dx^%d",temp->coeff,temp->deg);
+        if(temp->coeff>0 && temp->next!=NULL){
+            printf("+");
+        }
+        temp=temp->next;
+    }
+}
+int main()
+{
+    int co,i,de,n,choice;
+    struct node*h1=NULL,*h2=NULL,*h3=NULL;
+    printf("Enter nuber of rows in polynomial equation 1:");
+    scanf("%d",&n);
+   // max_deg=-1000;
+    for(i=0;i<n;i++){
+        scanf("%d %d",&co,&de);
+        h1=add(h1,co,de);
+    }
+    //display(h1);
+    printf("Enter nuber of rows in polynomial equation 2:");
+    scanf("%d",&n);
+    for(i=0;i<n;i++){
+        scanf("%d %d",&co,&de);
+        h2=add(h2,co,de);
+    }
+    do{
+    printf("\n1.Enter 1 for addtion\n2.Enter 2 for subraction\n3.Enter 3 for multiplication\n4.Enter 4 for display\n5.Enter 5 to exit");
+    printf("\nEnter your choice:");
+    scanf("%d",&choice);
+    switch(choice){
+        case 1:
+            h3=NULL;
+            h3=add_poly(h3,h1,h2);
+            break;
+        case 2:
+            int a,b;
+            h3=NULL;
+            printf("Enter which polynomial should be subracted form which(example if 2-1: enter 2 1):");
+            scanf("%d %d",&a,&b);
+            if(a==1&&b==2){
+                h3=sub_poly(h3,h1,h2);
+            }
+            else if(a==2&&b==1){
+                h3=sub_poly(h3,h2,h1);
+            }
+            else{
+                printf("Invalid input");
+            }
+            break;
+        case 3:
+            h3=NULL;
+            h3=poly_mul(h3,h1,h2);
+            break;
+        case 4:
+            display(h3);
+            break;
+        default:
+            if(choice!=5)
+                printf("Invalid input");
+    }
+    }while(choice!=5);
+}
